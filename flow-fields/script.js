@@ -67,14 +67,19 @@ class Effect {
     this.width = width;
     this.height = height;
     this.particles = [];
-    this.numberOfParticles = 300;
+    this.numberOfParticles = 2000;
     this.cellSize = 20;
     this.rows;
     this.cols;
     this.flowField = [];
-    this.curve = 0.5;
-    this.zoom = 0.13;
+    this.curve = 2.2;
+    this.zoom = 0.1;
+    this.debug = true;
     this.init();
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "d") this.debug = !this.debug;
+    });
   }
 
   init() {
@@ -96,7 +101,29 @@ class Effect {
     }
   }
 
+  drawGrid(context) {
+    context.save();
+    context.strokeStyle = "white";
+    context.lineWidth = 0.3;
+    for (let r = 0; r < this.rows; r++) {
+      const currentR = Math.floor(r * this.cellSize);
+      context.beginPath();
+      context.moveTo(0, currentR);
+      context.lineTo(this.width, currentR);
+      context.stroke();
+    }
+    for (let c = 0; c < this.cols; c++) {
+      const currentC = Math.floor(c * this.cellSize);
+      context.beginPath();
+      context.moveTo(currentC, 0);
+      context.lineTo(currentC, this.height);
+      context.stroke();
+    }
+    context.restore();
+  }
+
   render(context) {
+    if (this.debug) this.drawGrid(context);
     this.particles.forEach((particle) => {
       particle.update(context);
       particle.draw(context);
@@ -106,7 +133,6 @@ class Effect {
 
 function init() {
   const effect = new Effect(canvas.width, canvas.height);
-  effect.render(ctx);
 
   const animate = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

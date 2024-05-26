@@ -15,10 +15,13 @@ class Particle {
     this.y = Math.floor(Math.random() * this.effect.height);
     this.speedX;
     this.speedY;
-    this.speedModifier = Math.floor(Math.random() * 3);
+    this.speedModifier = Math.floor(Math.random() * 4) + 1;
     this.history = [{ x: this.x, y: this.y }];
-    this.maxLength = Math.floor(Math.random() * 200 + 10);
+    this.maxLength = Math.floor(Math.random() * 300 + 20);
     this.timer = this.maxLength * 2;
+
+    this.colours = ["#8500be", "#ad009e", "#c2007e", "#cb0061", "#cb0049"];
+    this.colour = this.colours[Math.floor(Math.random() * this.colours.length)];
   }
 
   draw(context) {
@@ -27,6 +30,7 @@ class Particle {
     for (let i = 1; i < this.history.length; i++) {
       context.lineTo(this.history[i].x, this.history[i].y);
     }
+    context.strokeStyle = this.colour;
     context.stroke();
   }
 
@@ -63,22 +67,27 @@ class Particle {
 }
 
 class Effect {
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
     this.particles = [];
     this.numberOfParticles = 2000;
-    this.cellSize = 20;
+    this.cellSize = 10;
     this.rows;
     this.cols;
     this.flowField = [];
     this.curve = 2.2;
-    this.zoom = 0.1;
-    this.debug = true;
+    this.zoom = 0.04;
+    this.debug = false;
     this.init();
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "d") this.debug = !this.debug;
+    });
+
+    window.addEventListener("resize", (e) => {
+      this.resize(e.target.innerWidth, e.target.innerHeight);
     });
   }
 
@@ -96,6 +105,7 @@ class Effect {
     }
 
     // particles
+    this.particles = [];
     for (let i = 0; i < this.numberOfParticles; i++) {
       this.particles.push(new Particle(this));
     }
@@ -122,6 +132,14 @@ class Effect {
     context.restore();
   }
 
+  resize(width, height) {
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+    this.init();
+  }
+
   render(context) {
     if (this.debug) this.drawGrid(context);
     this.particles.forEach((particle) => {
@@ -132,7 +150,7 @@ class Effect {
 }
 
 function init() {
-  const effect = new Effect(canvas.width, canvas.height);
+  const effect = new Effect(canvas);
 
   const animate = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -144,9 +162,3 @@ function init() {
 }
 
 init();
-
-window.addEventListener("resize", function () {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  init();
-});
